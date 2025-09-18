@@ -2,6 +2,25 @@
 
 All notable changes to `laravel-filament-client-upload-cos` will be documented in this file.
 
+## [1.1.1] - 2024-01-XX
+
+### Fixed
+- 修复命名空间中的双反斜杠问题
+- 修复 PHP 文件中的命名空间声明错误
+- 修复 use 语句中的命名空间引用问题
+- 确保所有文件的命名空间格式正确
+
+### Changed
+- 优化命名空间结构，提高代码可读性
+- 统一所有文件的命名空间格式
+
+## [1.1.0] - 2024-01-XX
+
+### Changed
+- 更新包命名空间从 `YourVendor\FilamentCosUpload` 到 `Jackillll\FilamentCosUpload`
+- 更新 composer.json 配置
+- 改进项目结构和文档
+
 ## [1.0.0] - 2024-01-XX
 
 ### Added
