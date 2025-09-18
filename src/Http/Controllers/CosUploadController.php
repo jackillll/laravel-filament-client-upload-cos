@@ -1,11 +1,11 @@
 <?php
 
-namespace YourVendor\FilamentCosUpload\Http\Controllers;
+namespace Jackillll\\FilamentCosUpload\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-use YourVendor\FilamentCosUpload\Services\CosSignatureService;
+use Jackillll\\FilamentCosUpload\Services\CosSignatureService;
 use Illuminate\Support\Facades\Validator;
 
 class CosUploadController extends Controller

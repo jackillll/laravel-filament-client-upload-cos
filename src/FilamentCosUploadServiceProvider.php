@@ -1,12 +1,12 @@
 <?php
 
-namespace YourVendor\FilamentCosUpload;
+namespace Jackillll\\FilamentCosUpload;
 
 use Illuminate\Support\ServiceProvider;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
-use YourVendor\FilamentCosUpload\Macros\FileUploadMacros;
-use YourVendor\FilamentCosUpload\Services\CosSignatureService;
+use Jackillll\\FilamentCosUpload\Macros\FileUploadMacros;
+use Jackillll\\FilamentCosUpload\Services\CosSignatureService;
 
 class FilamentCosUploadServiceProvider extends ServiceProvider
 {

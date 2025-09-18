@@ -1,10 +1,10 @@
 <?php
 
-namespace YourVendor\FilamentCosUpload\Tests\Feature;
+namespace Jackillll\\FilamentCosUpload\Tests\Feature;
 
 use Orchestra\Testbench\TestCase;
-use YourVendor\FilamentCosUpload\FilamentCosUploadServiceProvider;
-use YourVendor\FilamentCosUpload\Services\CosSignatureService;
+use Jackillll\\FilamentCosUpload\FilamentCosUploadServiceProvider;
+use Jackillll\\FilamentCosUpload\Services\CosSignatureService;
 
 class CosUploadTest extends TestCase
 {

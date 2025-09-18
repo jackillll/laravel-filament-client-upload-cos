@@ -1,6 +1,6 @@
 <?php
 
-namespace YourVendor\FilamentCosUpload\Components\Concerns;
+namespace Jackillll\\FilamentCosUpload\Components\Concerns;
 
 use Closure;
 

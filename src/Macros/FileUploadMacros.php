@@ -1,6 +1,6 @@
 <?php
 
-namespace YourVendor\FilamentCosUpload\Macros;
+namespace Jackillll\\FilamentCosUpload\Macros;
 
 use Closure;
 use Filament\Forms\Components\FileUpload;
