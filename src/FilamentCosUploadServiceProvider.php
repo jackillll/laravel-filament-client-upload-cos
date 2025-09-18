@@ -1,0 +1,46 @@
+<?php
+
+namespace YourVendor\FilamentCosUpload;
+
+use Illuminate\Support\ServiceProvider;
+use Filament\Support\Assets\Js;
+use Filament\Support\Facades\FilamentAsset;
+use YourVendor\FilamentCosUpload\Macros\FileUploadMacros;
+use YourVendor\FilamentCosUpload\Services\CosSignatureService;
+
+class FilamentCosUploadServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        $this->mergeConfigFrom(
+            __DIR__ . '/../config/filament-cos-upload.php',
+            'filament-cos-upload'
+        );
+
+        // Register COS signature service
+        $this->app->singleton(CosSignatureService::class, function ($app) {
+            return new CosSignatureService();
+        });
+    }
+
+    public function boot(): void
+    {
+        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'filament-cos-upload');
+
+        $this->publishes([
+            __DIR__ . '/../config/filament-cos-upload.php' => config_path('filament-cos-upload.php'),
+        ], 'filament-cos-upload-config');
+
+        $this->publishes([
+            __DIR__ . '/../resources/views' => resource_path('views/vendor/filament-cos-upload'),
+        ], 'filament-cos-upload-views');
+
+        FilamentAsset::register([
+            Js::make('filament-cos-upload', __DIR__ . '/../resources/js/filament-cos-upload.js'),
+        ], 'your-vendor/laravel-filament-client-upload-cos');
+
+        // Register FileUpload macros
+        FileUploadMacros::register();
+    }
+}
