@@ -1,5 +1,5 @@
 {
-  "name": "your-vendor/laravel-filament-client-upload-cos",
+  "name": "jackillll/laravel-filament-client-upload-cos",
   "description": "Laravel Filament extension for Tencent Cloud COS client-side upload",
   "type": "library",
   "license": "MIT",
