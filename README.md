@@ -15,7 +15,7 @@
 使用 Composer 安装扩展包：
 
 ```bash
-composer require your-vendor/laravel-filament-client-upload-cos
+composer require jackillll/laravel-filament-client-upload-cos
 ```
 
 发布配置文件：
@@ -109,12 +109,12 @@ return [
     'region' => env('COS_REGION', 'ap-beijing'),
     'bucket' => env('COS_BUCKET'),
     'domain' => env('COS_DOMAIN'),
-    
+
     // 上传配置
     'max_file_size' => env('COS_MAX_FILE_SIZE', 10485760), // 10MB
     'allowed_extensions' => ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx'],
     'upload_path' => env('COS_UPLOAD_PATH', 'uploads/'),
-    
+
     // 安全配置
     'signature_expires' => 3600, // 1小时
     'callback_url' => env('COS_CALLBACK_URL'),

@@ -38,7 +38,7 @@ class FilamentCosUploadServiceProvider extends ServiceProvider
 
         FilamentAsset::register([
             Js::make('filament-cos-upload', __DIR__ . '/../resources/js/filament-cos-upload.js'),
-        ], 'your-vendor/laravel-filament-client-upload-cos');
+        ], 'jackillll/laravel-filament-client-upload-cos');
 
         // Register FileUpload macros
         FileUploadMacros::register();
