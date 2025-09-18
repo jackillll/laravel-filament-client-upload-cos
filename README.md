@@ -88,7 +88,7 @@ FileUpload::make('file')
 如果您需要更多控制，可以使用扩展包提供的自定义组件：
 
 ```php
-use Jackillll\FilamentCosUpload\Components\FileUpload;
+use YourVendor\FilamentCosUpload\Components\FileUpload;
 
 FileUpload::make('attachment')
     ->cosUpload('attachments/')

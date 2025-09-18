@@ -1,9 +1,9 @@
 <?php
 
-namespace Jackillll\\FilamentCosUpload\Components;
+namespace Jackillll\FilamentCosUpload\Components;
 
 use Filament\Forms\Components\FileUpload as BaseFileUpload;
-use Jackillll\\FilamentCosUpload\Components\Concerns\HasCosUpload;
+use Jackillll\FilamentCosUpload\Components\Concerns\HasCosUpload;
 
 class FileUpload extends BaseFileUpload
 {

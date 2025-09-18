@@ -2,23 +2,6 @@
 
 All notable changes to `laravel-filament-client-upload-cos` will be documented in this file.
 
-## [1.1.0] - 2024-12-19
-
-### Added
-- 改进了包的命名空间和vendor名称
-- 优化了代码结构和文档
-- 增强了错误处理机制
-- 改进了前端JavaScript的兼容性
-
-### Changed
-- 更新了composer.json中的包名和命名空间
-- 优化了服务提供者的注册逻辑
-- 改进了配置文件的默认值
-
-### Fixed
-- 修复了在某些环境下的兼容性问题
-- 改进了文件上传的错误提示
-
 ## [1.0.0] - 2024-01-XX
 
 ### Added

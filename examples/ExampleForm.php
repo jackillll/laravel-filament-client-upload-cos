@@ -54,7 +54,7 @@ class CreateExample extends CreateRecord
                     }),
 
                 // 使用自定义组件
-                \Jackillll\\FilamentCosUpload\Components\FileUpload::make('custom_file')
+                \Jackillll\FilamentCosUpload\Components\FileUpload::make('custom_file')
                     ->label('自定义文件上传')
                     ->cosUpload('custom/')
                     ->cosUploadSuccess(function ($file) {

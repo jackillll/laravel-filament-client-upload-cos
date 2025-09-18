@@ -1,6 +1,6 @@
 <?php
 
-namespace Jackillll\\FilamentCosUpload\Services;
+namespace Jackillll\FilamentCosUpload\Services;
 
 use Illuminate\Support\Str;
 
