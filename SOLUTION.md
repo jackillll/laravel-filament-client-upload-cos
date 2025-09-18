@@ -127,6 +127,8 @@ class FileUpload extends BaseFileUpload
        data-cos-bound="true">
 ```
 
+**注意：** 如果你看到的是 FilePond 生成的 input（如 `class="filepond--browser"`），这是正常的。我们的 JavaScript 代码会自动检测并配置这些元素。
+
 ### 2. 检查网络请求
 选择文件后，Network面板应该显示：
 - ✅ POST `/filament-cos-upload/signature` (获取签名)
@@ -166,6 +168,38 @@ php artisan route:list | grep cos-upload
 ```bash
 php artisan filament-cos-upload:test
 ```
+
+### 问题5：FilePond input 缺少 data 属性
+**症状：** input 元素显示为 `<input class="filepond--browser" type="file" ...>` 但没有 `data-cos-upload` 等属性
+
+**原因：** FilePond 库会创建自己的 input 元素，这些元素不会自动继承原始配置
+
+**解决方案：**
+1. **确保调用了 cosUpload() 方法：**
+   ```php
+   FileUpload::make('avatar')
+       ->cosUpload() // 🔥 必须调用此方法
+       ->image();
+   ```
+
+2. **检查父元素配置：**
+   我们的 JavaScript 会自动检测父元素的 data 属性并复制到 FilePond 的 input 元素
+
+3. **手动调试：**
+   ```javascript
+   // 在浏览器控制台运行
+   document.querySelectorAll('input[type="file"]').forEach(input => {
+       console.log('Input:', input);
+       console.log('data-cos-upload:', input.dataset.cosUpload);
+       console.log('Parent data-cos-upload:', input.parentElement.dataset.cosUpload);
+   });
+   ```
+
+4. **强制重新绑定：**
+   ```javascript
+   // 在浏览器控制台运行
+   new FilamentCosUpload();
+   ```
 
 ## 📝 测试清单
 

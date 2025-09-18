@@ -2,6 +2,20 @@
 
 All notable changes to `laravel-filament-client-upload-cos` will be documented in this file.
 
+## [1.2.1] - 2024-01-25
+
+### Fixed
+- 修复 FilePond 组件 input 元素缺少 data 属性的问题
+- 改进 JavaScript 智能检测机制，支持 FilePond 动态创建的 input 元素
+- 增强父元素配置检测，自动复制 COS 配置到 FilePond input
+- 更新 SOLUTION.md 文档，添加 FilePond 相关问题的解决方案
+- 新增测试页面 test-filament-integration.html 用于验证 Filament 集成
+
+### Enhanced
+- 优化 shouldEnableCosUpload 方法，支持多层级配置检测
+- 改进 observeDOM 方法，配合新的智能检测逻辑
+- 增强对 Alpine.js 数据绑定的支持
+
 ## [1.2.0] - 2024-01-25
 
 ### Added

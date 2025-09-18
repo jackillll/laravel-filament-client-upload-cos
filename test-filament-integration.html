@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filament COS Upload Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .filament-forms-file-upload-component {
+            margin: 10px 0;
+        }
+        .cos-upload-wrapper {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .cos-upload-info {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        .debug-info {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Filament COS Upload Integration Test</h1>
+    
+    <div class="test-section">
+        <h2>测试 1: 使用 Macro 方式 (extraAttributes)</h2>
+        <p>模拟通过 FileUpload::make()->cosUpload() 生成的组件</p>
+        
+        <div class="filament-forms-file-upload-component cos-upload-wrapper"
+             data-cos-upload="true"
+             data-cos-path="uploads/"
+             data-cos-options='{"max_file_size": 5242880, "allowed_extensions": ["jpg", "png", "gif"]}'>
+            
+            <input type="file" 
+                   id="test-macro-input"
+                   name="avatar"
+                   accept="image/*"
+                   class="filepond--browser">
+            
+            <div class="cos-upload-info">
+                <p>Files will be uploaded directly to Tencent Cloud COS</p>
+            </div>
+        </div>
+        
+        <div class="debug-info" id="debug-macro"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>测试 2: 使用自定义组件方式</h2>
+        <p>模拟自定义 FileUpload 组件生成的结构</p>
+        
+        <div x-data="{
+                state: '',
+                cosUploadEnabled: true,
+                cosUploadPath: 'documents/',
+                cosUploadOptions: {max_file_size: 10485760, allowed_extensions: ['pdf', 'doc']},
+                signatureUrl: '/filament-cos-upload/signature',
+                callbackUrl: '/filament-cos-upload/callback'
+             }"
+             class="filament-forms-file-upload-component cos-upload-wrapper">
+            
+            <input type="file" 
+                   id="test-component-input"
+                   name="document"
+                   accept=".pdf,.doc,.docx"
+                   data-cos-upload="true"
+                   data-cos-options='{"max_file_size": 10485760, "allowed_extensions": ["pdf", "doc"]}'
+                   class="filepond--browser">
+            
+            <div class="cos-upload-info">
+                <p>Files will be uploaded directly to Tencent Cloud COS</p>
+            </div>
+        </div>
+        
+        <div class="debug-info" id="debug-component"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>测试 3: FilePond 动态生成的 input</h2>
+        <p>模拟 FilePond 库动态创建的 input 元素</p>
+        
+        <div class="filament-forms-file-upload-component cos-upload-wrapper"
+             data-cos-upload="true"
+             data-cos-path="gallery/"
+             data-cos-options='{"max_file_size": 2097152, "allowed_extensions": ["jpg", "png", "gif"]}'>
+            
+            <!-- 这个 input 会被 JavaScript 动态创建 -->
+            <div id="filepond-container">
+                <button onclick="createDynamicInput()">模拟 FilePond 创建 input</button>
+            </div>
+            
+            <div class="cos-upload-info">
+                <p>Files will be uploaded directly to Tencent Cloud COS</p>
+            </div>
+        </div>
+        
+        <div class="debug-info" id="debug-dynamic"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>调试信息</h2>
+        <div class="debug-info" id="global-debug"></div>
+    </div>
+
+    <!-- 加载 COS Upload JavaScript -->
+    <script src="resources/js/filament-cos-upload.js"></script>
+    
+    <script>
+        // 调试函数
+        function updateDebugInfo() {
+            const inputs = document.querySelectorAll('input[type="file"]');
+            let debugInfo = `找到 ${inputs.length} 个文件输入框:\n\n`;
+            
+            inputs.forEach((input, index) => {
+                debugInfo += `Input ${index + 1}:\n`;
+                debugInfo += `  ID: ${input.id}\n`;
+                debugInfo += `  Name: ${input.name}\n`;
+                debugInfo += `  data-cos-upload: ${input.dataset.cosUpload || 'undefined'}\n`;
+                debugInfo += `  data-cos-path: ${input.dataset.cosPath || 'undefined'}\n`;
+                debugInfo += `  data-cos-options: ${input.dataset.cosOptions || 'undefined'}\n`;
+                debugInfo += `  data-cos-bound: ${input.dataset.cosBound || 'undefined'}\n`;
+                debugInfo += `  Parent data-cos-upload: ${input.parentElement.dataset.cosUpload || 'undefined'}\n`;
+                debugInfo += '\n';
+            });
+            
+            document.getElementById('global-debug').textContent = debugInfo;
+        }
+
+        // 模拟 FilePond 动态创建 input
+        function createDynamicInput() {
+            const container = document.getElementById('filepond-container');
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.id = 'dynamic-filepond-input';
+            input.name = 'filepond';
+            input.className = 'filepond--browser';
+            input.accept = 'image/*';
+            
+            container.innerHTML = '';
+            container.appendChild(input);
+            
+            // 更新调试信息
+            setTimeout(updateDebugInfo, 100);
+        }
+
+        // 监听文件选择事件
+        document.addEventListener('change', function(event) {
+            if (event.target.type === 'file') {
+                const input = event.target;
+                const debugId = input.id.replace('-input', '').replace('test-', 'debug-').replace('dynamic-filepond', 'debug-dynamic');
+                const debugEl = document.getElementById(debugId);
+                
+                if (debugEl) {
+                    debugEl.textContent = `文件选择事件触发:\n` +
+                        `文件数量: ${event.target.files.length}\n` +
+                        `data-cos-upload: ${input.dataset.cosUpload}\n` +
+                        `data-cos-bound: ${input.dataset.cosBound}\n` +
+                        `时间: ${new Date().toLocaleTimeString()}`;
+                }
+            }
+        });
+
+        // 页面加载完成后更新调试信息
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(updateDebugInfo, 500);
+        });
+
+        // 定期更新调试信息
+        setInterval(updateDebugInfo, 2000);
+    </script>
+</body>
+</html>

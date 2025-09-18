@@ -15,19 +15,96 @@ class FilamentCosUpload {
     }
 
     bindFileInputs() {
-        const fileInputs = document.querySelectorAll('input[type="file"][data-cos-upload="true"]:not([data-cos-bound])');
+        // 查找所有可能的文件输入框
+        const fileInputs = document.querySelectorAll('input[type="file"]:not([data-cos-bound])');
         
         fileInputs.forEach(input => {
-            // 标记已绑定，避免重复绑定
-            input.setAttribute('data-cos-bound', 'true');
-            
-            // 绑定change事件
-            input.addEventListener('change', (event) => {
-                this.handleFileSelect(event);
-            });
-            
-            console.log('COS Upload bound to input:', input);
+            // 检查是否应该启用 COS 上传
+            if (this.shouldEnableCosUpload(input)) {
+                // 标记已绑定，避免重复绑定
+                input.setAttribute('data-cos-bound', 'true');
+                
+                // 绑定change事件
+                input.addEventListener('change', (event) => {
+                    this.handleFileSelect(event);
+                });
+                
+                console.log('COS Upload bound to input:', input);
+            }
         });
+    }
+
+    shouldEnableCosUpload(input) {
+        // 直接检查 data-cos-upload 属性
+        if (input.dataset.cosUpload === 'true') {
+            return true;
+        }
+
+        // 检查父元素是否有 COS 上传配置
+        let parent = input.parentElement;
+        while (parent && parent !== document.body) {
+            // 检查父元素的 data 属性
+            if (parent.dataset.cosUpload === 'true' || 
+                parent.hasAttribute('data-cos-upload') ||
+                parent.querySelector('[data-cos-upload="true"]')) {
+                
+                // 将配置复制到 input 元素
+                this.copyDataAttributes(parent, input);
+                return true;
+            }
+            
+            // 检查 Alpine.js 数据
+            if (parent.hasAttribute('x-data')) {
+                const alpineData = this.getAlpineData(parent);
+                if (alpineData && alpineData.cosUploadEnabled) {
+                    // 从 Alpine 数据复制配置
+                    this.copyAlpineData(alpineData, input);
+                    return true;
+                }
+            }
+            
+            parent = parent.parentElement;
+        }
+
+        return false;
+    }
+
+    copyDataAttributes(source, target) {
+        // 复制 COS 相关的 data 属性
+        if (source.dataset.cosUpload) {
+            target.dataset.cosUpload = source.dataset.cosUpload;
+        }
+        if (source.dataset.cosPath) {
+            target.dataset.cosPath = source.dataset.cosPath;
+        }
+        if (source.dataset.cosOptions) {
+            target.dataset.cosOptions = source.dataset.cosOptions;
+        }
+    }
+
+    getAlpineData(element) {
+        try {
+            // 尝试获取 Alpine.js 数据
+            if (window.Alpine && element._x_dataStack) {
+                return element._x_dataStack[0];
+            }
+        } catch (error) {
+            console.warn('Failed to get Alpine data:', error);
+        }
+        return null;
+    }
+
+    copyAlpineData(alpineData, input) {
+        // 从 Alpine 数据复制到 input 的 dataset
+        if (alpineData.cosUploadEnabled) {
+            input.dataset.cosUpload = 'true';
+        }
+        if (alpineData.cosUploadPath) {
+            input.dataset.cosPath = alpineData.cosUploadPath;
+        }
+        if (alpineData.cosUploadOptions) {
+            input.dataset.cosOptions = JSON.stringify(alpineData.cosUploadOptions);
+        }
     }
 
     observeDOM() {
@@ -39,14 +116,16 @@ class FilamentCosUpload {
                         if (node.nodeType === Node.ELEMENT_NODE) {
                             // 检查新添加的节点中是否有文件输入框
                             const fileInputs = node.querySelectorAll ? 
-                                node.querySelectorAll('input[type="file"][data-cos-upload="true"]:not([data-cos-bound])') : [];
+                                node.querySelectorAll('input[type="file"]:not([data-cos-bound])') : [];
                             
                             fileInputs.forEach(input => {
-                                input.setAttribute('data-cos-bound', 'true');
-                                input.addEventListener('change', (event) => {
-                                    this.handleFileSelect(event);
-                                });
-                                console.log('COS Upload bound to dynamically added input:', input);
+                                if (this.shouldEnableCosUpload(input)) {
+                                    input.setAttribute('data-cos-bound', 'true');
+                                    input.addEventListener('change', (event) => {
+                                        this.handleFileSelect(event);
+                                    });
+                                    console.log('COS Upload bound to dynamically added input:', input);
+                                }
                             });
                         }
                     });
