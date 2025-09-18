@@ -7,6 +7,7 @@ use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Jackillll\FilamentCosUpload\Macros\FileUploadMacros;
 use Jackillll\FilamentCosUpload\Services\CosSignatureService;
+use Jackillll\FilamentCosUpload\Commands\TestCosUploadCommand;
 
 class FilamentCosUploadServiceProvider extends ServiceProvider
 {
@@ -42,5 +43,12 @@ class FilamentCosUploadServiceProvider extends ServiceProvider
 
         // Register FileUpload macros
         FileUploadMacros::register();
+
+        // Register commands
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                TestCosUploadCommand::class,
+            ]);
+        }
     }
 }

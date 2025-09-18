@@ -4,47 +4,166 @@ class FilamentCosUpload {
     }
 
     init() {
-        document.addEventListener('DOMContentLoaded', () => {
-            this.bindFileInputs();
-        });
+        // 立即绑定已存在的元素
+        this.bindFileInputs();
+        
+        // 监听DOM变化以支持动态加载的组件
+        this.observeDOM();
+        
+        // 监听Livewire组件更新
+        this.bindLivewireEvents();
     }
 
     bindFileInputs() {
-        const fileInputs = document.querySelectorAll('input[type="file"][data-cos-upload="true"]');
+        const fileInputs = document.querySelectorAll('input[type="file"][data-cos-upload="true"]:not([data-cos-bound])');
         
         fileInputs.forEach(input => {
+            // 标记已绑定，避免重复绑定
+            input.setAttribute('data-cos-bound', 'true');
+            
+            // 绑定change事件
             input.addEventListener('change', (event) => {
                 this.handleFileSelect(event);
             });
+            
+            console.log('COS Upload bound to input:', input);
+        });
+    }
+
+    observeDOM() {
+        // 使用MutationObserver监听DOM变化
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            // 检查新添加的节点中是否有文件输入框
+                            const fileInputs = node.querySelectorAll ? 
+                                node.querySelectorAll('input[type="file"][data-cos-upload="true"]:not([data-cos-bound])') : [];
+                            
+                            fileInputs.forEach(input => {
+                                input.setAttribute('data-cos-bound', 'true');
+                                input.addEventListener('change', (event) => {
+                                    this.handleFileSelect(event);
+                                });
+                                console.log('COS Upload bound to dynamically added input:', input);
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    bindLivewireEvents() {
+        // 监听Livewire事件
+        document.addEventListener('livewire:load', () => {
+            console.log('Livewire loaded, binding COS upload inputs');
+            this.bindFileInputs();
+        });
+
+        document.addEventListener('livewire:update', () => {
+            console.log('Livewire updated, binding COS upload inputs');
+            setTimeout(() => {
+                this.bindFileInputs();
+            }, 100);
+        });
+
+        // 监听Alpine.js事件（Filament v3使用Alpine.js）
+        document.addEventListener('alpine:init', () => {
+            console.log('Alpine.js initialized, binding COS upload inputs');
+            this.bindFileInputs();
         });
     }
 
     async handleFileSelect(event) {
         const input = event.target;
-        const files = input.files;
+        const files = Array.from(input.files);
         
-        if (!files || files.length === 0) {
-            return;
-        }
+        if (files.length === 0) return;
 
-        const file = files[0];
-        const options = JSON.parse(input.dataset.cosOptions || '{}');
+        // 阻止默认的Livewire上传行为
+        event.preventDefault();
+        event.stopPropagation();
         
-        try {
-            await this.uploadFile(file, input, options);
-        } catch (error) {
-            console.error('Upload failed:', error);
-            this.showError(input, error.message);
+        console.log('COS Upload: Intercepted file selection', files);
+
+        // 清空input的值，防止Livewire处理
+        const originalFiles = input.files;
+        input.value = '';
+
+        for (const file of files) {
+            try {
+                console.log('COS Upload: Starting upload for file', file.name);
+                const result = await this.uploadFile(file, input);
+                console.log('COS Upload: Upload completed', result);
+                
+                // 通知Livewire组件文件已上传
+                this.notifyLivewireUpload(input, result);
+                
+            } catch (error) {
+                console.error('COS Upload failed:', error);
+                this.showError(input, error.message);
+                
+                // 如果上传失败，恢复原始文件选择
+                this.restoreFileSelection(input, originalFiles);
+            }
         }
     }
 
-    async uploadFile(file, input, options) {
+    notifyLivewireUpload(input, result) {
+        // 创建一个自定义事件通知Livewire组件
+        const event = new CustomEvent('cos-upload-complete', {
+            detail: {
+                url: result.url,
+                key: result.key,
+                size: result.size,
+                input: input
+            },
+            bubbles: true
+        });
+        
+        input.dispatchEvent(event);
+        
+        // 更新隐藏字段的值
+        this.updateInputValue(input, result);
+        
+        // 触发Livewire的change事件
+        const changeEvent = new Event('change', { bubbles: true });
+        input.dispatchEvent(changeEvent);
+    }
+
+    restoreFileSelection(input, files) {
+        // 尝试恢复文件选择（某些浏览器可能不支持）
+        try {
+            const dt = new DataTransfer();
+            for (let i = 0; i < files.length; i++) {
+                dt.items.add(files[i]);
+            }
+            input.files = dt.files;
+        } catch (error) {
+            console.warn('Cannot restore file selection:', error);
+        }
+    }
+
+    async uploadFile(file, input, options = {}) {
+        // 获取COS上传选项
+        const cosOptions = JSON.parse(input.dataset.cosOptions || '{}');
+        const mergedOptions = { ...cosOptions, ...options };
+        
+        console.log('COS Upload options:', mergedOptions);
+        
         // Show upload progress
         this.showProgress(input, 0);
         
         try {
             // Get upload signature from server
-            const signature = await this.getUploadSignature(file);
+            const signature = await this.getUploadSignature(file, mergedOptions);
             
             // Upload file to COS
             const result = await this.uploadToCos(file, signature, (progress) => {
@@ -59,13 +178,14 @@ class FilamentCosUpload {
             
             this.showSuccess(input);
             
+            return result;
         } catch (error) {
             this.showError(input, error.message);
             throw error;
         }
     }
 
-    async getUploadSignature(file) {
+    async getUploadSignature(file, options = {}) {
         const response = await fetch('/filament-cos-upload/signature', {
             method: 'POST',
             headers: {
@@ -73,11 +193,16 @@ class FilamentCosUpload {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
             },
             body: JSON.stringify({
-                filename: file.name,
+                file_name: file.name,
                 file_size: file.size,
                 file_type: file.type,
+                options: options,
             }),
         });
+
+        if (!response.ok) {
+            throw new Error(`Failed to get upload signature: ${response.statusText}`);
+        }
 
         const data = await response.json();
         

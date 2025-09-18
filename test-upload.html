@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="test-token">
+    <title>COS Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .upload-container {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .file-input {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>COS Upload 功能测试</h1>
+    
+    <div class="upload-container">
+        <h3>测试1: 基本COS上传</h3>
+        <input type="file" 
+               class="file-input" 
+               data-cos-upload="true"
+               data-cos-options='{"path": "test/"}'>
+        <p>选择文件后应该使用COS直传，而不是/livewire/upload-file</p>
+    </div>
+
+    <div class="upload-container">
+        <h3>测试2: 多文件上传</h3>
+        <input type="file" 
+               class="file-input" 
+               data-cos-upload="true"
+               data-cos-options='{"path": "multi/", "maxFiles": 5}'
+               multiple>
+        <p>支持多文件选择和上传</p>
+    </div>
+
+    <div class="upload-container">
+        <h3>测试3: 普通上传（不启用COS）</h3>
+        <input type="file" class="file-input">
+        <p>这个输入框应该使用默认的上传方式</p>
+    </div>
+
+    <div class="log" id="log">
+        <strong>日志输出:</strong>
+        
+    </div>
+
+    <script>
+        // 添加日志功能
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : (type === 'success' ? 'success' : '');
+            logEl.innerHTML += `\n[${timestamp}] <span class="${className}">${message}</span>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        // 重写console.log来显示在页面上
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            log(args.join(' '), 'info');
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            log(args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            log(args.join(' '), 'error');
+        };
+
+        // 监听COS上传完成事件
+        document.addEventListener('cos-upload-complete', function(event) {
+            log(`COS上传完成: ${JSON.stringify(event.detail)}`, 'success');
+        });
+
+        // 监听普通文件选择
+        document.querySelectorAll('input[type="file"]:not([data-cos-upload])').forEach(input => {
+            input.addEventListener('change', function(event) {
+                log(`普通文件选择: ${Array.from(event.target.files).map(f => f.name).join(', ')}`);
+            });
+        });
+
+        log('测试页面已加载');
+    </script>
+
+    <!-- 加载COS上传脚本 -->
+    <script src="resources/js/filament-cos-upload.js"></script>
+</body>
+</html>
